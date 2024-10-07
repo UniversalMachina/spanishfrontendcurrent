@@ -5,6 +5,7 @@ import DashboardLayout from "./pages/Dashboard/DashboardLayout"; // Updated impo
 import SignupLogin from "./pages/SignupLogin/SignupLogin"; // Import the SignupLogin component
 import Logout from "./pages/Logout/Logout"; // Import the Logout component
 import AudioRecoderLayout from "./pages/AudioRecoder/AudioRecoderLayout"; // Import the AudioRecoderLayout
+import VoiceChatbot_Interaction_Page from "./pages/VoiceChatTest/VoiceChatTest";
 
 function App() {
   const action = useNavigationType();
@@ -57,6 +58,9 @@ function App() {
       <Route path="/" element={<DashboardLayout />} />
       <Route path="/dashboard" element={<DashboardLayout />} /> {/* Add the dashboard route */}
       <Route path="/voice-agent" element={<AudioRecoderLayout />} /> {/* Add the audio recorder layout route */}
+      <Route path="/voice-agent-test" element={<VoiceChatbot_Interaction_Page />} /> {/* Add the audio recorder layout route */}
+
+     
       <Route path="/signup" element={<SignupLogin />} /> {/* Add the signup route */}
       <Route path="/logout" element={<Logout />} /> {/* Add the logout route */}
     </Routes>
