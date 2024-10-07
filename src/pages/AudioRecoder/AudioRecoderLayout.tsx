@@ -2,7 +2,8 @@ import React from "react";
 import { useParams } from "react-router-dom";
 import { SidebarComponent } from "../../components/sidebar";
 import { Dashboard } from "../../components/dashboard";
-import { CreateVoiceAgentComponent } from "../../components/createvoiceagent";
+import { CreateVoiceAgentComponent } from "../../components/createagent/CreateVoiceAgentComponent";
+
 
 function AudioRecoder() {
   const { tab } = useParams();
