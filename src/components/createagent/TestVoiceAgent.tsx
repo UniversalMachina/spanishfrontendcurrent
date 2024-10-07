@@ -201,9 +201,7 @@ export function TestVoiceAgent() {
           )}
         </CardContent>
       </Card>
-      <div className="mt-4">
-        <ChatBox messages={messages} />
-      </div>
+
       <div className="flex justify-center mt-4">
         <Button size="lg" variant="outline" className="bg-white text-indigo-600 border-indigo-600 hover:bg-indigo-100">
           <Phone className="mr-2 h-5 w-5" />
@@ -215,24 +213,3 @@ export function TestVoiceAgent() {
   )
 }
 
-const ChatBox: React.FC<{ messages: Message[] }> = ({ messages }) => {
-  const chatBoxRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-white rounded-xl shadow-lg max-h-[300px]" ref={chatBoxRef}>
-      {messages.map((message, index) => (
-        <div key={index} className={`flex items-start gap-3 ${message.sender === 'user' ? 'justify-end' : ''}`}>
-          <div className={`rounded-lg p-3 max-w-[75%] ${message.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'}`}>
-            <p>{message.text}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
