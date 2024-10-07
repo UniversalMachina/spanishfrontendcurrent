@@ -1,126 +1,128 @@
-'use client'
-
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { FaTrash } from 'react-icons/fa'
-import { useLogin } from '../../LoginContext'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { FileText } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { FaTrash } from 'react-icons/fa';
+import { useLogin } from '../../LoginContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { FileText } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export function KnowledgeBaseUpload() {
-  const [file, setFile] = useState<File | null>(null)
-  const [uploadStatus, setUploadStatus] = useState('')
-  const [files, setFiles] = useState<any[]>([])
-  const [embeddingStatus, setEmbeddingStatus] = useState('not_started')
-  const { username } = useLogin()
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [files, setFiles] = useState<any[]>([]);
+  const [embeddingStatus, setEmbeddingStatus] = useState('not_started');
+  const { username } = useLogin();
 
   useEffect(() => {
     if (username) {
-      fetchFiles()
+      fetchFiles();
+      checkEmbeddingStatus(); // Start checking embedding status on mount
     }
-  }, [username])
+  }, [username]);
 
   const fetchFiles = async () => {
     try {
       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/files`, {
-        params: { user_id: username }
-      })
-      setFiles(response.data)
+        params: { user_id: username },
+      });
+      setFiles(response.data);
     } catch (error) {
-      console.error('Error fetching files:', error)
+      console.error('Error fetching files:', error);
     }
-  }
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = event.target.files?.[0]
+    const selectedFile = event.target.files?.[0];
     if (selectedFile) {
-      const fileType = selectedFile.type
+      const fileType = selectedFile.type;
       if (fileType === 'application/pdf' || fileType === 'text/plain') {
-        setFile(selectedFile)
-        setUploadStatus('')
+        setFile(selectedFile);
+        setUploadStatus('');
       } else {
-        setFile(null)
-        setUploadStatus('Only PDF and text files are allowed')
+        setFile(null);
+        setUploadStatus('Only PDF and text files are allowed');
       }
     }
-  }
+  };
 
   const handleUpload = async () => {
     if (!file) {
-      setUploadStatus('Please select a valid file')
-      return
+      setUploadStatus('Please select a valid file');
+      return;
     }
 
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('user_id', username)
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('user_id', username);
 
     try {
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
-      setUploadStatus('File uploaded successfully')
-      fetchFiles()
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setUploadStatus('File uploaded successfully');
+      fetchFiles();
     } catch (error) {
-      setUploadStatus('Error uploading file')
-      console.error('Error uploading file:', error)
+      setUploadStatus('Error uploading file');
+      console.error('Error uploading file:', error);
     }
-  }
+  };
 
   const handleDelete = async (fileId: string) => {
     try {
       await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/api/files/${fileId}`, {
-        params: { user_id: username }
-      })
-      setUploadStatus('File deleted successfully')
-      fetchFiles()
+        params: { user_id: username },
+      });
+      setUploadStatus('File deleted successfully');
+      fetchFiles();
     } catch (error) {
-      setUploadStatus('Error deleting file')
-      console.error('Error deleting file:', error)
+      setUploadStatus('Error deleting file');
+      console.error('Error deleting file:', error);
     }
-  }
+  };
 
   const generateEmbeddings = async () => {
     if (files.length === 0) {
-      setUploadStatus('Please upload files before generating embeddings')
-      return
+      setUploadStatus('Please upload files before generating embeddings');
+      return;
     }
 
     try {
       await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/embeddings`, {
-        user_id: username
-      })
-      setEmbeddingStatus('processing')
-      checkEmbeddingStatus()
+        user_id: username,
+      });
+      setEmbeddingStatus('processing');
+      checkEmbeddingStatus();
     } catch (error) {
-      setEmbeddingStatus('error')
-      console.error(error)
+      setEmbeddingStatus('error');
+      console.error(error);
     }
-  }
+  };
 
   const checkEmbeddingStatus = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/embeddings/status/${username}`)
-      setEmbeddingStatus(response.data.status)
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/api/embeddings/status/${username}`
+      );
+      setEmbeddingStatus(response.data.status);
 
       if (response.data.status === 'processing') {
-        setEmbeddingStatus('processing')
-      } else {
-        setEmbeddingStatus('not_started')
+        // Check again after 5 seconds
+        setTimeout(checkEmbeddingStatus, 5000);
       }
     } catch (error) {
-      setEmbeddingStatus('error')
-      console.error(error)
+      setEmbeddingStatus('error');
+      console.error('Error checking embedding status:', error);
     }
-  }
+  };
 
   return (
     <Card className="mb-8 bg-gradient-to-br from-yellow-500 to-orange-600 text-white">
       <CardHeader>
         <CardTitle>Knowledge Base</CardTitle>
-        <CardDescription className="text-yellow-100">Upload a PDF or text file as knowledge base</CardDescription>
+        <CardDescription className="text-yellow-100">
+          Upload a PDF or text file as knowledge base
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex items-center space-x-4 mb-4">
@@ -136,7 +138,7 @@ export function KnowledgeBaseUpload() {
           </Button>
         </div>
         {uploadStatus && <p className="mt-2 text-sm text-yellow-100">{uploadStatus}</p>}
-        
+
         {/* List of Uploaded Files */}
         <div className="mt-6">
           <h3 className="text-xl font-semibold mb-4">Uploaded Files</h3>
@@ -154,10 +156,10 @@ export function KnowledgeBaseUpload() {
                   <tr key={file.id} className="hover:bg-orange-500">
                     <td className="border border-yellow-300 p-2">{file.file_name}</td>
                     <td className="border border-yellow-300 p-2">{file.file_type}</td>
-                    <td className="border border-yellow-300 p-2 flex justify-around">
+                    <td className="border border-yellow-300 p-2">
                       <button
                         onClick={() => handleDelete(file.id)}
-                        className="text-yellow-100 hover:text-yellow-200"
+                        className="flex items-center justify-center w-full h-full text-yellow-100 hover:text-yellow-200"
                       >
                         <FaTrash />
                       </button>
@@ -181,9 +183,28 @@ export function KnowledgeBaseUpload() {
           >
             Generate Embeddings
           </Button>
-          {/* ... embedding status messages ... */}
+
+          {/* Embedding Status Messages */}
+          {embeddingStatus === 'processing' && (
+            <div className="mt-4 p-4 bg-yellow-100 text-yellow-700 rounded">
+              <p className="font-semibold">Processing</p>
+              <p>Generating embeddings. This may take a while...</p>
+            </div>
+          )}
+          {embeddingStatus === 'completed' && (
+            <div className="mt-4 p-4 bg-green-100 text-green-700 rounded">
+              <p className="font-semibold">Success</p>
+              <p>Embeddings generated successfully!</p>
+            </div>
+          )}
+          {embeddingStatus === 'error' && (
+            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
+              <p className="font-semibold">Error</p>
+              <p>Failed to generate embeddings. Please try again.</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
