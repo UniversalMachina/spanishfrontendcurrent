@@ -6,6 +6,7 @@ import SignupLogin from "./pages/SignupLogin/SignupLogin"; // Import the SignupL
 import Logout from "./pages/Logout/Logout"; // Import the Logout component
 import AudioRecoderLayout from "./pages/AudioRecoder/AudioRecoderLayout"; // Import the AudioRecoderLayout
 import VoiceChatbot_Interaction_Page from "./pages/VoiceChatTest/VoiceChatTest";
+import AIVoiceAgent from "./pages/AIVoiceAgent/AIVoiceAgent";
 
 function App() {
   const action = useNavigationType();
@@ -58,6 +59,8 @@ function App() {
       <Route path="/" element={<DashboardLayout />} />
       <Route path="/dashboard" element={<DashboardLayout />} /> {/* Add the dashboard route */}
       <Route path="/voice-agent" element={<AudioRecoderLayout />} /> {/* Add the audio recorder layout route */}
+      <Route path="/voice-agent-use" element={<AIVoiceAgent />} /> {/* Add the audio recorder layout route */}
+
       <Route path="/voice-agent-test" element={<VoiceChatbot_Interaction_Page />} /> {/* Add the audio recorder layout route */}
 
      
