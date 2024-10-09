@@ -16,6 +16,8 @@ export function TestVoiceAgent() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [interimText, setInterimText] = useState<string>('');
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isCsvSent, setIsCsvSent] = useState(false); // Track if the CSV call is sent
+  const [csvErrorMessage, setCsvErrorMessage] = useState<string | null>(null); // Track error message
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
@@ -168,6 +170,27 @@ export function TestVoiceAgent() {
     }
   };
 
+  const triggerCsvCall = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/csv-numbers/${username}`, {
+        method: 'GET',
+      });
+
+      if (response.ok) {
+        setIsCsvSent(true);
+        setCsvErrorMessage(null);  // Clear error message if successful
+        console.log('CSV data fetched successfully');
+      } else if (response.status === 404) {
+        const errorData = await response.json();
+        setCsvErrorMessage(errorData.error);  // Set error message for user feedback
+        console.error('Failed to fetch CSV data: No phone numbers found');
+      }
+    } catch (error) {
+      setCsvErrorMessage('Error fetching CSV data');
+      console.error('Error fetching CSV:', error);
+    }
+  };
+
   return (
     <div className="mb-8">
       <Card className="bg-gradient-to-br from-pink-500 to-red-600 text-white">
@@ -203,13 +226,25 @@ export function TestVoiceAgent() {
       </Card>
 
       <div className="flex justify-center mt-4">
-        <Button size="lg" variant="outline" className="bg-white text-indigo-600 border-indigo-600 hover:bg-indigo-100">
+        <Button 
+          size="lg" 
+          variant="outline" 
+          className={`bg-white text-indigo-600 border-indigo-600 hover:bg-indigo-100 ${isCsvSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+          onClick={triggerCsvCall}
+          disabled={isCsvSent}
+        >
           <Phone className="mr-2 h-5 w-5" />
-          Execute Calls
+          {isCsvSent ? 'Calls Sent' : 'Execute Calls'}
         </Button>
       </div>
+
+      {csvErrorMessage && (
+        <div className="mt-4 text-center text-red-500">
+          {csvErrorMessage}
+        </div>
+      )}
+
       <audio ref={audioRef} className="hidden" />
     </div>
   )
 }
-
