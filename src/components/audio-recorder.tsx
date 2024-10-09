@@ -20,7 +20,7 @@ export function AudioRecorderComponent() {
   const [analysis, setAnalysis] = useState("''")
 
   useEffect(() => {
-    let interval
+    let interval: NodeJS.Timeout | undefined
     if (isRecording) {
       interval = setInterval(() => {
         setRecordingTime((prevTime) => prevTime + 1)
@@ -31,7 +31,7 @@ export function AudioRecorderComponent() {
     return () => clearInterval(interval)
   }, [isRecording])
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
     return `${minutes.toString().padStart(2, "'0'")}:${remainingSeconds.toString().padStart(2, "'0'")}`
