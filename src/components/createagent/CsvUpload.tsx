@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Upload, Trash } from "lucide-react"
@@ -12,6 +12,24 @@ export function CsvUpload({  }) {
 
   const [csvFile, setCsvFile] = useState<File | null>(null)
   const [csvFileName, setCsvFileName] = useState<string | null>(null)
+  const [existingCsv, setExistingCsv] = useState<boolean>(false)
+
+  useEffect(() => {
+    checkExistingCsv()
+  }, [])
+
+  const checkExistingCsv = async () => {
+    try {
+      const response = await axios.get(`${apiBaseUrl}/csv/${username}`, { responseType: 'blob' })
+      if (response.status === 200) {
+        setExistingCsv(true)
+        setCsvFileName(`${username}_phone_numbers.csv`)
+      }
+    } catch (error) {
+      console.error('Error checking for existing CSV:', error)
+      setExistingCsv(false)
+    }
+  }
 
   const handleCsvUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -29,13 +47,13 @@ export function CsvUpload({  }) {
     try {
       await axios.post(`${apiBaseUrl}/uploadcsv/${username}`, formData);
       setCsvFileName(csvFile.name);
+      setExistingCsv(true);
       alert('File uploaded successfully');
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('File upload failed');
     }
   };
-  
 
   const downloadCsv = async () => {
     try {
@@ -43,7 +61,7 @@ export function CsvUpload({  }) {
       const url = window.URL.createObjectURL(new Blob([response.data]))
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', csvFileName || 'phone_numbers.csv')
+      link.setAttribute('download', `${username}_phone_numbers.csv`)
       document.body.appendChild(link)
       link.click()
     } catch (error) {
@@ -55,7 +73,9 @@ export function CsvUpload({  }) {
   const deleteCsv = async () => {
     try {
       await axios.delete(`${apiBaseUrl}/csv/${username}`)
+      setExistingCsv(false)
       setCsvFileName(null)
+      setCsvFile(null)
       alert('CSV deleted successfully')
     } catch (error) {
       console.error('Error deleting CSV:', error)
@@ -66,35 +86,43 @@ export function CsvUpload({  }) {
   return (
     <Card className="mb-8 bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
       <CardHeader>
-        <CardTitle>Upload CSV</CardTitle>
+        <CardTitle>CSV Management</CardTitle>
         <CardDescription className="text-purple-100">
-          Upload a CSV file with phone numbers to call
+          Upload, download, or delete CSV files with phone numbers
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center space-x-4">
-          <Input
-            type="file"
-            accept=".csv"
-            onChange={handleCsvUpload}
-            className="flex-grow bg-white text-gray-900"
-          />
-          <Button onClick={uploadCsv} className="bg-white text-purple-600 hover:bg-purple-100">
-            <Upload className="mr-2 h-4 w-4" />
-            Upload
-          </Button>
-        </div>
+        {existingCsv ? (
+          <div>
+            <p className="text-sm text-purple-100 mb-4">Existing file: {csvFileName}</p>
+            <div className="flex space-x-4">
+              <Button onClick={downloadCsv} className="bg-white text-purple-600 hover:bg-purple-100">
+                Download CSV
+              </Button>
+              <Button onClick={deleteCsv} className="bg-red-600 text-white hover:bg-red-700">
+                <Trash className="mr-2 h-4 w-4" />
+                Delete CSV
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-4">
+            <Input
+              type="file"
+              accept=".csv"
+              onChange={handleCsvUpload}
+              className="flex-grow bg-white text-gray-900"
+            />
+            <Button onClick={uploadCsv} className="bg-white text-purple-600 hover:bg-purple-100">
+              <Upload className="mr-2 h-4 w-4" />
+              Upload
+            </Button>
+          </div>
+        )}
 
-        {csvFileName && (
+        {csvFileName && !existingCsv && (
           <div className="mt-4">
             <p className="text-sm text-purple-100">File uploaded: {csvFileName}</p>
-            <Button onClick={downloadCsv} className="mt-2 bg-white text-purple-600 hover:bg-purple-100">
-              Download CSV
-            </Button>
-            <Button onClick={deleteCsv} className="mt-2 ml-4 bg-red-600 text-white hover:bg-red-700">
-              <Trash className="mr-2 h-4 w-4" />
-              Delete CSV
-            </Button>
           </div>
         )}
       </CardContent>
