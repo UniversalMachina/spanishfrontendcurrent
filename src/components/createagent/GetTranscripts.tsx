@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaPhoneAlt, FaUser, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaRedoAlt, FaDoorOpen, FaFileAlt, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
-import { useLogin } from '../../LoginContext'
 
 interface CallData {
-  id: string;
+  id: number;
   number: string;
   name: string | null;
   completed: boolean;
@@ -14,18 +13,26 @@ interface CallData {
   full_transcript: string | null;
 }
 
-const CallDataDisplay: React.FC = () => {
+interface CallDataDisplayProps {
+  username: string;
+}
+
+const CallDataDisplay: React.FC<CallDataDisplayProps> = ({ username }) => {
   const [callData, setCallData] = useState<CallData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { username } = useLogin();
 
   const fetchCallData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get<CallData[]>(`/api/call_data/${username}`);
-      setCallData(response.data);
+      const response = await axios.get<CallData[]>(`${import.meta.env.VITE_API_BASE_URL}/api/call_data/${username}`);
+      if (Array.isArray(response.data)) {
+        setCallData(response.data);
+      } else {
+        setError('Received invalid data format from server');
+        console.error('Expected array, got:', response.data);
+      }
     } catch (err) {
       setError('Failed to fetch call data');
       console.error(err);
@@ -37,7 +44,7 @@ const CallDataDisplay: React.FC = () => {
   const importGoogleSheets = async () => {
     try {
       await axios.post(`/api/import_googlesheets/${username}`);
-      fetchCallData();
+      fetchCallData();  // Refresh data after import
     } catch (err) {
       setError('Failed to import Google Sheets data');
       console.error(err);
@@ -63,46 +70,67 @@ const CallDataDisplay: React.FC = () => {
 
   return (
     <div className="space-y-4 p-4">
-      <button onClick={importGoogleSheets} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
+      <button 
+        onClick={importGoogleSheets} 
+        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+      >
         Import from Google Sheets
       </button>
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-            <th className="py-3 px-6 text-left"><FaPhoneAlt className="inline mr-2" />Phone Number</th>
-            <th className="py-3 px-6 text-left"><FaUser className="inline mr-2" />Name</th>
-            <th className="py-3 px-6 text-left"><FaCheckCircle className="inline mr-2" />Completed</th>
-            <th className="py-3 px-6 text-left"><FaCalendarAlt className="inline mr-2" />Date Completed</th>
-            <th className="py-3 px-6 text-left"><FaRedoAlt className="inline mr-2" />Attempts</th>
-            <th className="py-3 px-6 text-left"><FaDoorOpen className="inline mr-2" />Room Available</th>
-            <th className="py-3 px-6 text-left"><FaFileAlt className="inline mr-2" />Transcript</th>
-          </tr>
-        </thead>
-        <tbody className="text-gray-600 text-sm font-light">
-          {callData.map((call) => (
-            <tr key={call.id} className="border-b border-gray-200 hover:bg-gray-100">
-              <td className="py-3 px-6 text-left whitespace-nowrap">{call.number}</td>
-              <td className="py-3 px-6 text-left">{call.name || 'N/A'}</td>
-              <td className="py-3 px-6 text-left">
-                {call.completed ? <FaCheckCircle className="text-green-500" /> : <FaTimesCircle className="text-red-500" />}
-              </td>
-              <td className="py-3 px-6 text-left">{call.date_completed || 'N/A'}</td>
-              <td className="py-3 px-6 text-left">{call.attempts}</td>
-              <td className="py-3 px-6 text-left">
-                {call.roomavailable === null ? 'N/A' : (call.roomavailable ? <FaCheckCircle className="text-green-500" /> : <FaTimesCircle className="text-red-500" />)}
-              </td>
-              <td className="py-3 px-6 text-left">
-                <button 
-                  onClick={() => alert(call.full_transcript || 'No transcript available')}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
-                >
-                  View
-                </button>
-              </td>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-4 py-2 text-left"><FaPhoneAlt className="inline mr-2" />Phone Number</th>
+              <th className="px-4 py-2 text-left"><FaUser className="inline mr-2" />Name</th>
+              <th className="px-4 py-2 text-left"><FaCheckCircle className="inline mr-2" />Completed</th>
+              <th className="px-4 py-2 text-left"><FaCalendarAlt className="inline mr-2" />Date Completed</th>
+              <th className="px-4 py-2 text-left"><FaRedoAlt className="inline mr-2" />Attempts</th>
+              <th className="px-4 py-2 text-left"><FaDoorOpen className="inline mr-2" />Room Available</th>
+              <th className="px-4 py-2 text-left"><FaFileAlt className="inline mr-2" />Transcript</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {Array.isArray(callData) && callData.length > 0 ? (
+              callData.map((call) => (
+                <tr key={call.id} className="border-t">
+                  <td className="px-4 py-2">{call.number}</td>
+                  <td className="px-4 py-2">{call.name || 'N/A'}</td>
+                  <td className="px-4 py-2">
+                    {call.completed ? 
+                      <FaCheckCircle className="text-green-500" /> : 
+                      <FaTimesCircle className="text-red-500" />
+                    }
+                  </td>
+                  <td className="px-4 py-2">{call.date_completed || 'N/A'}</td>
+                  <td className="px-4 py-2">{call.attempts}</td>
+                  <td className="px-4 py-2">
+                    {call.roomavailable === null ? 'N/A' : 
+                      (call.roomavailable ? 
+                        <FaCheckCircle className="text-green-500" /> : 
+                        <FaTimesCircle className="text-red-500" />
+                      )
+                    }
+                  </td>
+                  <td className="px-4 py-2">
+                    <button 
+                      onClick={() => alert(call.full_transcript || 'No transcript available')}
+                      className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={7} className="px-4 py-2 text-center">
+                  No call data available
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
