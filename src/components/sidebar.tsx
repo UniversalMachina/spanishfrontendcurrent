@@ -7,7 +7,9 @@ import { useLogin } from "../LoginContext"; // Import the useLogin hook
 
 const sidebarItems = [
   { name: "Dashboard", tab: "dashboard" },
-  { name: "Voice Agent", tab: "voice-agent" }, // Added Audio Recorder
+  { name: "Voice Agent", tab: "voice-agent" }, 
+  { name: "Call Logs", tab: "call-logs" }, // Added Audio Recorder
+  // Added Audio Recorder
 ]
 
 export function SidebarComponent() {

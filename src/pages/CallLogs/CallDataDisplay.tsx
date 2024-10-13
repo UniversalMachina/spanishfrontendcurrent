@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaPhoneAlt, FaUser, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaRedoAlt, FaDoorOpen, FaFileAlt, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
+import { FaPhoneAlt, FaUser, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaRedoAlt, FaDoorOpen, FaFileAlt, FaSpinner, FaExclamationTriangle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 interface CallData {
   id: number;
@@ -21,6 +21,7 @@ const CallDataDisplay: React.FC<CallDataDisplayProps> = ({ username }) => {
   const [callData, setCallData] = useState<CallData[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedTranscript, setExpandedTranscript] = useState<number | null>(null);
 
   const fetchCallData = async () => {
     setLoading(true);
@@ -92,34 +93,46 @@ const CallDataDisplay: React.FC<CallDataDisplayProps> = ({ username }) => {
           <tbody>
             {Array.isArray(callData) && callData.length > 0 ? (
               callData.map((call) => (
-                <tr key={call.id} className="border-t">
-                  <td className="px-4 py-2">{call.number}</td>
-                  <td className="px-4 py-2">{call.name || 'N/A'}</td>
-                  <td className="px-4 py-2">
-                    {call.completed ? 
-                      <FaCheckCircle className="text-green-500" /> : 
-                      <FaTimesCircle className="text-red-500" />
-                    }
-                  </td>
-                  <td className="px-4 py-2">{call.date_completed || 'N/A'}</td>
-                  <td className="px-4 py-2">{call.attempts}</td>
-                  <td className="px-4 py-2">
-                    {call.roomavailable === null ? 'N/A' : 
-                      (call.roomavailable ? 
+                <React.Fragment key={call.id}>
+                  <tr className="border-t">
+                    <td className="px-4 py-2">{call.number}</td>
+                    <td className="px-4 py-2">{call.name || 'N/A'}</td>
+                    <td className="px-4 py-2">
+                      {call.completed ? 
                         <FaCheckCircle className="text-green-500" /> : 
                         <FaTimesCircle className="text-red-500" />
-                      )
-                    }
-                  </td>
-                  <td className="px-4 py-2">
-                    <button 
-                      onClick={() => alert(call.full_transcript || 'No transcript available')}
-                      className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded"
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
+                      }
+                    </td>
+                    <td className="px-4 py-2">{call.date_completed || 'N/A'}</td>
+                    <td className="px-4 py-2">{call.attempts}</td>
+                    <td className="px-4 py-2">
+                      {call.roomavailable === null ? 'N/A' : 
+                        (call.roomavailable ? 
+                          <FaCheckCircle className="text-green-500" /> : 
+                          <FaTimesCircle className="text-red-500" />
+                        )
+                      }
+                    </td>
+                    <td className="px-4 py-2">
+                      <button 
+                        onClick={() => setExpandedTranscript(expandedTranscript === call.id ? null : call.id)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-2 rounded flex items-center"
+                      >
+                        {expandedTranscript === call.id ? <FaChevronUp className="mr-1" /> : <FaChevronDown className="mr-1" />}
+                        {expandedTranscript === call.id ? 'Hide' : 'View'}
+                      </button>
+                    </td>
+                  </tr>
+                  {expandedTranscript === call.id && (
+                    <tr>
+                      <td colSpan={7} className="px-4 py-2 bg-gray-100">
+                        <div className="whitespace-pre-wrap">
+                          {call.full_transcript || 'No transcript available'}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))
             ) : (
               <tr>
