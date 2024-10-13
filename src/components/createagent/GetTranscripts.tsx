@@ -3,10 +3,19 @@ import axios from 'axios';
 import { FaPhoneAlt, FaUser, FaCheckCircle, FaTimesCircle, FaCalendarAlt, FaRedoAlt, FaDoorOpen, FaFileAlt, FaSpinner, FaExclamationTriangle } from 'react-icons/fa';
 import { useLogin } from '../../LoginContext'
 
+interface CallData {
+  id: string;
+  number: string;
+  name: string | null;
+  completed: boolean;
+  date_completed: string | null;
+  attempts: number;
+  roomavailable: boolean | null;
+  full_transcript: string | null;
+}
 
-
-const CallDataDisplay = () => {
-  const [callData, setCallData] = useState([]);
+const CallDataDisplay: React.FC = () => {
+  const [callData, setCallData] = useState<CallData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { username } = useLogin();
@@ -15,7 +24,7 @@ const CallDataDisplay = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/api/call_data/${username}`);
+      const response = await axios.get<CallData[]>(`/api/call_data/${username}`);
       setCallData(response.data);
     } catch (err) {
       setError('Failed to fetch call data');

@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import React from 'react';
-import { CsvUpload } from './CsvUpload'
-import { AgentPrompt } from './AgentPrompt'
-import { KnowledgeBaseUpload } from './KnowledgeBaseUpload'
-import { TestVoiceAgent } from './TestVoiceAgent'
-import { useNavigate } from 'react-router-dom';
-import CallDataDisplay from './GetTranscripts';
+import React from "react";
+import { CsvUpload } from "./CsvUpload";
+import { AgentPrompt } from "./AgentPrompt";
+import { KnowledgeBaseUpload } from "./KnowledgeBaseUpload";
+import { TestVoiceAgent } from "./TestVoiceAgent";
+import { useNavigate } from "react-router-dom";
+import CallDataDisplay from "./GetTranscripts";
 
 export function CreateVoiceAgentComponent() {
   const navigate = useNavigate();
@@ -28,8 +28,7 @@ export function CreateVoiceAgentComponent() {
         </button>
       </div> */}
 
-<CallDataDisplay/>
-
+      <CallDataDisplay />
     </div>
-  )
+  );
 }
