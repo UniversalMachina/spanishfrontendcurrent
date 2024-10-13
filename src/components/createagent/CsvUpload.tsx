@@ -83,6 +83,17 @@ export function CsvUpload({  }) {
     }
   }
 
+  const importGoogleSheets = async () => {
+    try {
+      await axios.post(`${apiBaseUrl}/import_googlesheets/${username}`);
+      alert('Phone numbers imported successfully from Google Sheets');
+      checkExistingCsv();  // Refresh the existing CSV status
+    } catch (error) {
+      console.error('Error importing from Google Sheets:', error);
+      alert('Failed to import from Google Sheets');
+    }
+  };
+
   return (
     <Card className="mb-8 bg-gradient-to-br from-purple-500 to-indigo-600 text-white">
       <CardHeader>
@@ -125,6 +136,13 @@ export function CsvUpload({  }) {
             <p className="text-sm text-purple-100">File uploaded: {csvFileName}</p>
           </div>
         )}
+
+        {/* Add this new button */}
+        <div className="mt-4">
+          <Button onClick={importGoogleSheets} className="bg-green-600 text-white hover:bg-green-700">
+            Import from Google Sheets
+          </Button>
+        </div>
       </CardContent>
     </Card>
   )
