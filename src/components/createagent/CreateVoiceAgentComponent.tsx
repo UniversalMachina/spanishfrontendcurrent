@@ -6,6 +6,7 @@ import { AgentPrompt } from "./AgentPrompt";
 import { KnowledgeBaseUpload } from "./KnowledgeBaseUpload";
 import { TestVoiceAgent } from "./TestVoiceAgent";
 import { useNavigate } from "react-router-dom";
+import GoogleLink from "./GoogleLink";
 
 export function CreateVoiceAgentComponent() {
   const navigate = useNavigate();
@@ -14,9 +15,11 @@ export function CreateVoiceAgentComponent() {
       <div className="max-w-3xl mx-auto">
         <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">Create Voice Agent</h1>
 
-        <CsvUpload />
+
+      <GoogleLink/>
+        {/* <CsvUpload />
         <AgentPrompt />
-        <KnowledgeBaseUpload /> 
+        <KnowledgeBaseUpload />  */}
 
 
         <button
