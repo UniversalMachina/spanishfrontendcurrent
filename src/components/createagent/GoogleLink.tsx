@@ -13,6 +13,10 @@ const GoogleCalendarAuth: React.FC = () => {
 
   useEffect(() => {
     checkAuthStatus();
+    window.addEventListener('message', handleAuthMessage);
+    return () => {
+      window.removeEventListener('message', handleAuthMessage);
+    };
   }, []);
 
   const checkAuthStatus = async (): Promise<void> => {
@@ -33,8 +37,40 @@ const GoogleCalendarAuth: React.FC = () => {
     }
   };
 
-  const handleGoogleLogin = (): void => {
-    window.location.href = 'http://localhost:5000/api/google/calendar/init';
+  const handleGoogleLogin = async (): Promise<void> => {
+    try {
+      const response = await fetch('http://localhost:5000/api/google/calendar/init', {
+        redirect: 'manual' // This prevents automatic redirect
+      });
+
+      if (response.type === 'opaqueredirect') {
+        // This means we got a redirect
+        const authWindow = window.open('http://localhost:5000/api/google/calendar/init', 'Google Calendar Auth', 'width=500,height=600');
+        if (!authWindow) {
+          setError('Popup blocked. Please allow popups for this website.');
+        }
+      } else if (response.ok) {
+        // If we get a success message, update the state
+        setIsAuthenticated(true);
+        fetchEvents();
+      } else {
+        const errorData = await response.json();
+        setError(`Authentication failed: ${errorData.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      setError('Error initiating Google login');
+      console.error('Error initiating Google login:', error);
+    }
+  };
+
+  const handleAuthMessage = (event: MessageEvent): void => {
+    if (event.data.status === 'success') {
+      setIsAuthenticated(true);
+      setError(null);
+      fetchEvents();
+    } else if (event.data.error) {
+      setError(`Authentication failed: ${event.data.error}`);
+    }
   };
 
   const fetchEvents = async (): Promise<void> => {
@@ -44,7 +80,8 @@ const GoogleCalendarAuth: React.FC = () => {
         const data: CalendarEvent[] = await response.json();
         setEvents(data);
       } else {
-        setError('Failed to fetch events');
+        const errorData = await response.json();
+        setError(`Failed to fetch events: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       setError('Error fetching events');
@@ -63,6 +100,12 @@ const GoogleCalendarAuth: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-md">
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+        
         {!isAuthenticated ? (
           <button
             onClick={handleGoogleLogin}
@@ -80,10 +123,6 @@ const GoogleCalendarAuth: React.FC = () => {
               Refresh Events
             </button>
           </div>
-        )}
-
-        {error && (
-          <p className="mt-4 text-red-500">{error}</p>
         )}
 
         {events.length > 0 && (
