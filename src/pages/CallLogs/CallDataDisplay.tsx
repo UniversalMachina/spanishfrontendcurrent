@@ -9,7 +9,7 @@ interface CallData {
   completed: boolean;
   date_completed: string | null;
   attempts: number;
-  roomavailable: boolean | null;
+  apointmentBooked: boolean | null;
   full_transcript: string | null;
 }
 
@@ -42,15 +42,15 @@ const CallDataDisplay: React.FC<CallDataDisplayProps> = ({ username }) => {
     }
   };
 
-  const importGoogleSheets = async () => {
-    try {
-      await axios.post(`/api/import_googlesheets/${username}`);
-      fetchCallData();  // Refresh data after import
-    } catch (err) {
-      setError('Failed to import Google Sheets data');
-      console.error(err);
-    }
-  };
+  // const importGoogleSheets = async () => {
+  //   try {
+  //     await axios.post(`/api/import_googlesheets/${username}`);
+  //     fetchCallData();  // Refresh data after import
+  //   } catch (err) {
+  //     setError('Failed to import Google Sheets data');
+  //     console.error(err);
+  //   }
+  // };
 
   useEffect(() => {
     fetchCallData();
@@ -71,12 +71,12 @@ const CallDataDisplay: React.FC<CallDataDisplayProps> = ({ username }) => {
 
   return (
     <div className="space-y-4 p-4">
-      <button 
+      {/* <button 
         onClick={importGoogleSheets} 
         className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
       >
         Import from Google Sheets
-      </button>
+      </button> */}
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white">
           <thead className="bg-gray-100">
@@ -86,7 +86,7 @@ const CallDataDisplay: React.FC<CallDataDisplayProps> = ({ username }) => {
               <th className="px-4 py-2 text-left"><FaCheckCircle className="inline mr-2" />Completed</th>
               <th className="px-4 py-2 text-left"><FaCalendarAlt className="inline mr-2" />Date Completed</th>
               <th className="px-4 py-2 text-left"><FaRedoAlt className="inline mr-2" />Attempts</th>
-              <th className="px-4 py-2 text-left"><FaDoorOpen className="inline mr-2" />Room Available</th>
+              <th className="px-4 py-2 text-left"><FaDoorOpen className="inline mr-2" />Apointment Booked</th>
               <th className="px-4 py-2 text-left"><FaFileAlt className="inline mr-2" />Transcript</th>
             </tr>
           </thead>
@@ -106,8 +106,8 @@ const CallDataDisplay: React.FC<CallDataDisplayProps> = ({ username }) => {
                     <td className="px-4 py-2">{call.date_completed || 'N/A'}</td>
                     <td className="px-4 py-2">{call.attempts}</td>
                     <td className="px-4 py-2">
-                      {call.roomavailable === null ? 'N/A' : 
-                        (call.roomavailable ? 
+                      {call.apointmentBooked === null ? 'N/A' : 
+                        (call.apointmentBooked ? 
                           <FaCheckCircle className="text-green-500" /> : 
                           <FaTimesCircle className="text-red-500" />
                         )
