@@ -17,9 +17,9 @@ export function CreateVoiceAgentComponent() {
 
 
       <GoogleLink/>
-        {/* <CsvUpload />
+        <CsvUpload />
         <AgentPrompt />
-        <KnowledgeBaseUpload />  */}
+        <KnowledgeBaseUpload /> 
 
 
         <button
